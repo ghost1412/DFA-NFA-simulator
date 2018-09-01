@@ -1,0 +1,8 @@
+This is a lex program to check given string matches dfa/nfa:
+$make
+$./mylex is_nfa_dfa no.of.states no.of.final.states no.of.alphabets < input.txt 
+to clean the files, type 
+$make clean
+to exit press "ctrl + c"
+
+Note: this program assumes input string is lower case alphabets
