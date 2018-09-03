@@ -18,10 +18,10 @@ struct Properties{
 	int _aCount;						//alphabet count
 };
 
-std::fstream file("specification.txt");				//fstream object to read from file 
+std::fstream file("specification.txt");			//fstream object to read from file 
 int* _states = NULL; 						//states
 int* _final = NULL;						//final states
-char* _alphabet = NULL;						//alphabets
+char* _alphabet = NULL;					//alphabets
 int** _DTransition_Table = NULL;				//transition table for dfa
 int** _nfa_state_size = NULL;					//no. of , sperated states in a cell
 int*** _NTransition_Table = NULL;				//transition table for nfa
