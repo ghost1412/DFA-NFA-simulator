@@ -18,18 +18,19 @@ struct Properties{
 	int _aCount;						//alphabet count
 };
 
-std::fstream file("specification.txt");
-int* _states = NULL; 
-int* _final = NULL;
-char* _alphabet = NULL;
-int** _DTransition_Table = NULL;
-int** _nfa_state_size = NULL;
-int*** _NTransition_Table = NULL;
-Properties* properties = NULL;
-int* _hash = NULL;
+std::fstream file("specification.txt");				//fstream object to read from file 
+int* _states = NULL; 						//states
+int* _final = NULL;						//final states
+char* _alphabet = NULL;						//alphabets
+int** _DTransition_Table = NULL;				//transition table for dfa
+int** _nfa_state_size = NULL;					//no. of , sperated states in a cell
+int*** _NTransition_Table = NULL;				//transition table for nfa
+Properties* properties = NULL;					//properties of nfa/ dfa
+int* _hash = NULL;						//keep track of if the state is already present in the stack for nfa
 
 
 Properties* _Cmd_Input(int argc, char* argv[]){
+//command line input
 	Properties* properties = (struct Properties*)malloc(sizeof(struct Properties));
 	for(int i=0; i<argc; i++){
 		properties->_is_dfa_nfa = atoi(argv[1]);
@@ -41,16 +42,19 @@ Properties* _Cmd_Input(int argc, char* argv[]){
 }
 
 void _zeroHash(){
+//make all values of _hash to 0
 	for(int i=0; i< properties->_sCount; i++)
 		_hash[i] = 0;
 }
 
 void _Hash_Initialize(Properties* properties){
+//allocate memory to _hash
 	_hash = new int[properties->_sCount];
 	_zeroHash();
 }
 
-int** _Dfa_TransiTable(Properties* properties){			//generate transition table based on is  dfa
+int** _Dfa_TransiTable(Properties* properties){			
+//generate transition table based on is  dfa
 		int** _Transition_Table = new int*[properties->_sCount];
 		for(int i=0; i<properties->_sCount; i++)
 			_Transition_Table[i] = new int[properties->_aCount];
@@ -58,7 +62,8 @@ int** _Dfa_TransiTable(Properties* properties){			//generate transition table ba
 
 }
 
-int*** _Nfa_TransiTable(Properties* properties){		//generate transition table based on is nfa
+int*** _Nfa_TransiTable(Properties* properties){		
+//generate transition table based on is nfa
 		int*** _Transition_Table = new int**[properties->_sCount];
 		for(int i=0; i<properties->_sCount; i++)
 			_Transition_Table[i] = new int*[properties->_aCount+ epsilon_state];
@@ -66,7 +71,8 @@ int*** _Nfa_TransiTable(Properties* properties){		//generate transition table ba
 		return _Transition_Table;
 }
 
-int* _States_Reader(Properties* properties){			//read states from file
+int* _States_Reader(Properties* properties){			
+//read states from file
 	int* _states = new int[properties->_sCount];
 	for(int i=0; i<properties->_sCount; i++){
 		char _temp[1000];
@@ -76,7 +82,8 @@ int* _States_Reader(Properties* properties){			//read states from file
 	return _states;
 }
 
-int* _Final_Reader(Properties* properties){			//read final states from file
+int* _Final_Reader(Properties* properties){			
+//read final states from file
 	int* _final = new int[properties->_fCount];
 	for(int i=0; i<properties->_fCount; i++){
 		char _temp[1000];
@@ -86,7 +93,8 @@ int* _Final_Reader(Properties* properties){			//read final states from file
 	return _final;
 }
 
-char* _Alphabet_Reader(Properties* properties){			//read alphabets from file
+char* _Alphabet_Reader(Properties* properties){			
+//read alphabets from file
 	char* _alphabet = NULL;
 	if(properties->_is_dfa_nfa)
 		_alphabet = new char[properties->_aCount];
@@ -102,7 +110,8 @@ char* _Alphabet_Reader(Properties* properties){			//read alphabets from file
 	return _alphabet;
 }
 
-void _Table_filler(int** Transition_table, Properties* properties){		//fill dfa transition table
+void _Table_filler(int** Transition_table, Properties* properties){		
+//fill dfa transition table
 	for(int i=0; i< properties->_sCount; i++){
 		for(int j=0; j< properties->_aCount + 1; j++){
 			char _temp[1000];
@@ -113,6 +122,7 @@ void _Table_filler(int** Transition_table, Properties* properties){		//fill dfa 
 }
 
 void _Table_filler(int*** Transition_table, Properties* properties){
+//fill nfa transition table
 	int _comma_sep_States;
 	_nfa_state_size = new int*[properties->_sCount];
 	for(int i=0; i<properties->_sCount; i++)
@@ -137,6 +147,7 @@ void _Table_filler(int*** Transition_table, Properties* properties){
 }
 
 void _isMatched(int** Transition_table, Properties* properties, int* _final, char* _input){
+//check whether input string matches transition table else error for dfa
 	int pointer = 0;
 	int i=0, j=0, input_length = strlen(_input);
 	while(pointer != input_length){
@@ -154,6 +165,7 @@ void _isMatched(int** Transition_table, Properties* properties, int* _final, cha
 }
 
 void _isMatched(int*** Transition_table, Properties* properties, int* _final, char* _input){
+//check whether input string matches transition table else error for nfa
 	std::stack <int> _stack1, _stack2;
 	int pointer = 0, i=0, j=0, input_length = strlen(_input);			
 	int epsilon_state_pos = properties->_aCount + epsilon_state ;
@@ -167,6 +179,7 @@ void _isMatched(int*** Transition_table, Properties* properties, int* _final, ch
 				continue;
 			}
 			if(_hash[Transition_table[i][epsilon_state_pos-1][ii]] == 0){
+			//e-closure
 				_stack1.push(Transition_table[i][epsilon_state_pos-1][ii]);	
 				_stack2.push(Transition_table[i][epsilon_state_pos-1][ii]);
 				_hash[Transition_table[i][epsilon_state_pos-1][ii]] = 1;
